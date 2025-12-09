@@ -7,7 +7,9 @@ This document provides a high-level overview of how ChatGPT works, focusing on t
 ```mermaid
 graph TD
     A["User Input<br/>(Text Prompt)"] --> B["Embeddings<br/>(Convert text to vectors)"]
+    click B "embeddings.md" "Learn more about embeddings"
     B --> C["Transformer Decoder<br/>(Multiple layers with<br/>Attention Mechanism)"]
+    click C "transformer.md" "Learn more about transformers"
     C --> D["Output Layer<br/>(Generate next token<br/>probabilities)"]
     D --> E["Generated Text<br/>(Response)"]
     

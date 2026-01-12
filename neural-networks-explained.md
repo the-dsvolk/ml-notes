@@ -6,6 +6,144 @@ This document provides a comprehensive technical explanation of neural networks,
 
 A neural network is a computational model inspired by biological neural networks, consisting of interconnected nodes (artificial neurons) organized in layers. Each neuron applies an **activation function** to a weighted sum of its inputs, enabling the network to learn complex non-linear mappings between input and output spaces.
 
+---
+
+## Simple Overview: How Neural Networks Learn
+
+### A. The Basic Building Block
+
+A neural network is layers of artificial neurons connected by weights. Each neuron computes two things:
+
+**1. Weighted sum:**
+```
+z = (input₁ × weight₁) + (input₂ × weight₂) + … + bias
+```
+
+**2. Activation function:**
+```
+output = activation_function(z)
+```
+
+> ⚠️ **Why activation functions matter:** Without them, the entire network would just be a linear model with limited power. Activation functions introduce non-linearity, enabling the network to learn complex patterns.
+
+```mermaid
+graph LR
+    subgraph "Single Neuron"
+        A["Inputs<br/>x₁, x₂, x₃"] --> B["Weighted Sum<br/>z = Σ(wᵢxᵢ) + b"]
+        B --> C["Activation<br/>a = f(z)"]
+        C --> D["Output"]
+    end
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style C fill:#f3e5f5
+    style D fill:#e8f5e8
+```
+
+---
+
+### B. The Forward Pass
+
+Input passes through each layer in two steps:
+
+| Step | Operation | Description |
+|------|-----------|-------------|
+| 1 | Linear transformation | Weighted sum + bias |
+| 2 | Activation function | Apply non-linearity (e.g., ReLU) |
+
+The final layer output → **prediction** → compare with true label via **loss function**.
+
+```mermaid
+graph LR
+    A["Input<br/>x"] --> B["Layer 1<br/>z₁ = W₁x + b₁<br/>a₁ = ReLU(z₁)"]
+    B --> C["Layer 2<br/>z₂ = W₂a₁ + b₂<br/>a₂ = ReLU(z₂)"]
+    C --> D["Output<br/>ŷ"]
+    D --> E["Loss<br/>L(y, ŷ)"]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style C fill:#fff3e0
+    style D fill:#e8f5e8
+    style E fill:#ffebee
+```
+
+#### 🔹 Where ReLU Fits In
+
+**ReLU** (Rectified Linear Unit) is the most common activation function:
+
+```
+ReLU(z) = max(0, z)
+```
+
+- Replaces negative values with zero
+- Keeps positive values unchanged
+
+**Why ReLU is popular:**
+- ✅ Simple and fast to compute
+- ✅ Helps avoid the vanishing gradient problem (compared to sigmoid/tanh)
+- ✅ Introduces non-linearity — crucial for learning complex patterns
+
+---
+
+### C. Gradient Calculation & Backpropagation
+
+**Gradient** = derivative of loss with respect to each weight.
+
+The network learns by computing how much each weight contributed to the error, then adjusting accordingly.
+
+For ReLU, the derivative is simple:
+
+| Condition | Derivative | Effect |
+|-----------|------------|--------|
+| input > 0 | 1 | Gradient passes through unchanged |
+| input ≤ 0 | 0 | Gradient is blocked |
+
+This simplicity:
+- Speeds up training
+- Creates sparse activations (many neurons output 0)
+
+```mermaid
+graph RL
+    A["Loss L"] --> B["∂L/∂W₂<br/>Update W₂"]
+    B --> C["∂L/∂W₁<br/>Update W₁"]
+    
+    subgraph "Chain Rule"
+        D["∂L/∂W = ∂L/∂ŷ × ∂ŷ/∂z × ∂z/∂W"]
+    end
+    
+    style A fill:#ffebee
+    style B fill:#fff3e0
+    style C fill:#e1f5fe
+```
+
+---
+
+### D. Weight Update
+
+Gradients from backpropagation are used to update weights:
+
+```
+new_weight = old_weight - learning_rate × gradient
+```
+
+```mermaid
+graph TD
+    A["Current Weight<br/>W"] --> B["Compute Gradient<br/>∂L/∂W"]
+    B --> C["Apply Learning Rate<br/>α × ∂L/∂W"]
+    C --> D["Update Weight<br/>W ← W - α(∂L/∂W)"]
+    D --> E["New Weight<br/>W'"]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style C fill:#f3e5f5
+    style D fill:#ffebee
+    style E fill:#e8f5e8
+```
+
+> ⚠️ **The "Dying ReLU" Problem:** Since ReLU zeros out gradients for negative inputs, some neurons may "die" (always output 0 and never recover). Variants like **Leaky ReLU** fix this by allowing a small gradient for negative values: `LeakyReLU(z) = max(0.01z, z)`
+
+---
+
 ## Neural Network Architecture
 
 ```mermaid

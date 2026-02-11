@@ -109,6 +109,22 @@ So LoRA is relevant at inference because:
 
 In both cases, the *predictions* are the same for a given **(W, A, B)**; the only difference is whether you precompute **W + B·A** once (merge) or add the two terms at runtime (adapter).
 
+### 3. One GPU, many “models”: base + adapters
+
+Normally, 100 different fine-tuned models (e.g. one for legal, one for medical, one for coding) would mean 100 separate copies of the model and, in the worst case, 100 GPUs. With LoRA (and similar adapter methods), you can run **all 100 on one GPU**: keep a single **base** model in memory and swap small **adapter** files (LoRAs) on the fly. Only the base is large; each adapter is a small **(A, B)** set, so many adapters fit in memory and can be loaded as needed.
+
+### 4. Multiple LoRAs in the inference engine
+
+Inference engines (e.g. **TensorRT-LLM**) can support **multiple LoRAs** at once. That enables:
+
+| Feature | What it means |
+|--------|----------------|
+| **Single-base model** | One large model (e.g. Llama-3) stays in GPU memory. All adapters share this base. |
+| **Batching** | Different requests can use different adapters in the **same batch**: e.g. User 1 gets LoRA A (legal), User 2 gets LoRA B (medical). The engine applies the right adapter per request within one forward pass. |
+| **Composition** | A single request can use **more than one LoRA** at once—e.g. combine a “Python code” style LoRA with a “medical knowledge” LoRA so one response has both coding style and medical content. |
+
+So at inference, LoRA is not only “one base, swap adapter when you switch task”—it also allows **many adapters in parallel** (batched) and **composed** (multiple adapters per request) on a single GPU.
+
 ---
 
 ## Advantages

@@ -87,6 +87,30 @@ We still do **not** modify the original **W** in the sense of editing the pretra
 
 ---
 
+## How LoRA is relevant during inference
+
+LoRA is a **fine-tuning** method, but it directly shapes **inference** in two ways.
+
+### 1. Same behavior as a fine-tuned model
+
+After LoRA training, the model’s *effective* weights are **W + B·A**. So at inference you get the **same outputs** as if you had fully fine-tuned **W**: the adapted behavior is baked into how we use the weights. LoRA doesn’t change what the model does at inference—it only changes how we *store* that behavior (base **W** plus small **A**, **B** instead of one big updated **W**).
+
+### 2. Two deployment options
+
+| Option | How inference works | When it’s useful |
+|--------|----------------------|------------------|
+| **Merged** | Load **W_new = W + B·A** and run a normal forward pass. No LoRA-specific code; same latency and memory as a single weight matrix. | One fixed task; simplest deployment. |
+| **Unmerged (base + adapter)** | Keep **W** and **(A, B)** separate. At each layer compute **W·x + (B·A)·x** (or equivalently one matmul with **W** and one with **B·A**, then add). | Multiple tasks: one base model, many small adapter files; switch task by loading a different **(A, B)** without touching **W**. |
+
+So LoRA is relevant at inference because:
+
+- **If you merge:** You run inference on **W_new**; there’s no extra cost. The “relevance” is that the model you’re running *is* the LoRA fine-tuned model, just stored as one matrix.
+- **If you don’t merge:** You explicitly use the base **W** plus the LoRA matrices **A** and **B** at inference time. That gives you **one base, many adapters**—you can swap in different **(A, B)** for different tasks or languages without storing multiple full copies of the model.
+
+In both cases, the *predictions* are the same for a given **(W, A, B)**; the only difference is whether you precompute **W + B·A** once (merge) or add the two terms at runtime (adapter).
+
+---
+
 ## Advantages
 
 - **Fewer trainable parameters and less memory:** Only **A** and **B** are updated; gradients and optimizer states are not needed for **W**.
@@ -118,5 +142,6 @@ We still do **not** modify the original **W** in the sense of editing the pretra
 | LoRA update **ΔW** | **B · A**, trained with gradient descent. |
 | Effective weights | **W + B·A** (additive); we “update” behavior by adding **ΔW**, not by changing **W**. |
 | After training | Can merge to **W_new = W + B·A** for deployment. |
+| **Inference** | Merged: run **W_new** only (no extra cost). Unmerged: run **W** + **(A, B)** so you can swap adapters per task. |
 
 So: **we don’t modify the original weights; we learn an additive low-rank correction (B·A) and add it on top of W.** That is how LoRA “updates” the effective weights without touching the pretrained **W**.

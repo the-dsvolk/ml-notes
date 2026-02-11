@@ -51,11 +51,11 @@ So “updating weights” in LoRA means: **learning an additive low-rank correct
 
 *Source: [IBM Think — LoRA](https://www.ibm.com/think/topics/lora).* A 4×4 matrix decomposed into 4×1 and 1×4 (low-rank factors):
 
-![LoRA: 4×4 matrix reduced to 4×1 and 1×4 matrices](resources/lora-matrix-decomposition-4x4-to-4x1-1x4.png)
+<img src="resources/lora-matrix-decomposition-4x4-to-4x1-1x4.jpg" alt="LoRA: 4×4 matrix reduced to 4×1 and 1×4 matrices" width="800" />
 
 How LoRA updates matrices **A** and **B** (rank r) and merges into a new weight matrix without modifying the original pretrained weights:
 
-![LoRA: how low-rank adaptation reduces model size](resources/lora-low-rank-adaptation-reduces-model-size.png)
+<img src="resources/lora-low-rank-adaptation-reduces-model-size.jpg" alt="LoRA: how low-rank adaptation reduces model size" width="800" />
 
 ```mermaid
 flowchart LR

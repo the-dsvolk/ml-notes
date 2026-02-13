@@ -73,9 +73,29 @@ graph TB
 
 ## Understanding the Latency Split
 
+<img src="resources/latency-ttft-tpot.png" alt="Latency split: TTFT covers the prefill phase, TPOT measures time per output token during decoding" width="700" />
+
 - **Time to First Token (TTFT):** The prefill phase runs entirely “behind the scenes.” The user only sees output once prefill completes and hands off to the first step of the decode phase. **Longer prompts increase this “invisible” processing time.** TTFT is the main latency users feel before any text appears.
 
 - **Time Per Output Token (TPOT):** This is the visible “typing” phase. Once decode begins, it emits tokens one by one. Each step must load model weights and the KV cache, so this phase is limited by **how fast the GPU can move data (bandwidth)**, not by how fast it can do math.
+
+---
+
+## Parallelism Strategies per Phase
+
+Different [parallelism strategies](parallelism.md) benefit each phase differently:
+
+<img src="resources/parallelism-vs-phases.png" alt="Parallelism strategies vs inference phases: PP helps decode, TP and DP help prefill" width="500" />
+
+| | [PP](parallelism.md#pipeline-parallelism-pp) | [TP](parallelism.md#tensor-parallelism-tp) | [DP](parallelism.md#fsdp-fully-sharded-data-parallel) |
+|---|:---:|:---:|:---:|
+| **Prefill** (compute-bound) | Neutral | Great | Great |
+| **Decode** (memory-bound) | Great | Neutral | Neutral |
+
+- **Prefill is compute-bound** — it processes the entire prompt in parallel. **TP** splits the matrix math across GPUs so each does less work, directly reducing TTFT. **DP** runs independent requests on separate replicas, boosting throughput. PP adds pipeline latency without helping the heavy compute.
+- **Decode is memory-bandwidth-bound** — each token step loads weights and KV cache. **PP** shards the model by layers so each GPU holds fewer weights in memory, reducing the data movement bottleneck. TP and DP don't directly ease the per-token memory bandwidth pressure.
+
+> See [Parallelism Strategies for Large Models](parallelism.md) for full definitions of PP, TP, and DP/FSDP.
 
 ---
 

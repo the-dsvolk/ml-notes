@@ -37,7 +37,7 @@ flowchart LR
 | Metric | Description | Aggregations |
 |--------|-------------|--------------|
 | **Time to First Token** | Time between when a request is sent and when its first response is received; one value per request. | Avg, min, max, p99, p90, p75 |
-| **Inter Token Latency** | Time between intermediate responses for a single request, divided by the number of generated tokens of the latter response; one value per response per request. | Avg, min, max, p99, p90, p75 |
+| **Inter Token Latency (ITL) / Time Per Output Token (TPOT)** | Time between intermediate responses for a single request, divided by the number of generated tokens of the latter response; one value per response per request. Same as “time per output token” (TPOT). | Avg, min, max, p99, p90, p75 |
 | **Request Latency** | Time between when a request is sent and when its final response is received; one value per request. | Avg, min, max, p99, p90, p75 |
 | **Output Sequence Length** | Total number of output tokens of a request; one value per request. | Avg, min, max, p99, p90, p75 |
 | **Input Sequence Length** | Total number of input tokens of a request; one value per request. | Avg, min, max, p99, p90, p75 |
@@ -58,9 +58,9 @@ flowchart LR
 
 ---
 
-## Inter Token Latency (ITL)
+## Inter Token Latency (ITL) / Time Per Output Token (TPOT)
 
-**What it is:** For a single request, the time between **intermediate responses** (e.g. between streamed chunks), divided by the number of generated tokens in the latter response. Often reported as “time per output token” (TPOT) or average ms per token during **decode**.
+**What it is:** For a single request, the time between **intermediate responses** (e.g. between streamed chunks), divided by the number of generated tokens in the latter response. GenAI-Perf calls this **Inter Token Latency (ITL)**; the same idea is often reported as **Time Per Output Token (TPOT)** or average ms per token during **decode**. TPS (tokens per second) = 1000 / TPOT (ms).
 
 **Why it matters:** ITL drives how fast the response “streams” after the first token. High ITL means slow token generation; low ITL means high decode throughput per request.
 
@@ -97,6 +97,22 @@ These are **request characteristics**, not latencies. You report their distribut
 - **Request Throughput:** Number of **completed requests** ÷ total time (e.g. requests/sec). **One value per benchmark.** Measures how many full requests the system can finish per second.
 
 No per-request aggregations: these are **benchmark-level** metrics. Useful for comparing hardware, batch sizes, or concurrency levels.
+
+---
+
+## Economics and matching human reading speed
+
+These metrics give **economics to the hardware**: they tell you how much throughput or latency you get per dollar and whether it is “good enough” for the use case.
+
+**Matching human reading speed**
+
+Human reading speeds typically range from **200 to 300 words per minute**.
+
+- An **interactivity level of 100** (i.e. 1 / Time per Output Token) means **100 tokens per second**.
+- Since ~100 tokens ≈ 75 words, **100 tokens/sec** is about **4,500 words per minute**.
+- At that rate, text appears **near-instantaneously** to the human eye.
+
+Pushing for 200 or 300 tokens/sec often gives **diminishing returns** for a single human reader, because they cannot consume the information that fast anyway. So “good enough” streaming for chat or reading is often in the ballpark of tens to low hundreds of tokens per second, depending on the product.
 
 ---
 

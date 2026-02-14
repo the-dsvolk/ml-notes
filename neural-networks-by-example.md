@@ -2,6 +2,8 @@
 
 A step-by-step tutorial that builds intuition with a real-estate example, then implements a small neural network in plain Python—no PyTorch or NumPy.
 
+> **Python implementation:** [src/neural_network_house_price.py](src/neural_network_house_price.py)
+
 ---
 
 ## Part 1: Understanding the Basics

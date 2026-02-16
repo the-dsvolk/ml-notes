@@ -1,5 +1,7 @@
 # Model Quantization
 
+<img src="resources/model_quantization_algorithms.png" alt="Model Quantization Algorithms: PTQ, QAT, QT strategies with training loop and GPU memory breakdown" width="800" />
+
 ## Quantization Data Types
 
 Floating-point numbers are stored using three components:

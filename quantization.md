@@ -129,6 +129,11 @@ Typical roles for different precisions in a layer or kernel:
 | FP8 | ~7 GB |
 | INT4 | ~3.5 GB |
 
+---
+
+## NVFP4 in Action
+
+<img src="resources/nvfp4_in_action.png" alt="NVFP4 training data flow: FPROP, WGRAD, DGRAD GEMMs in NVFP4 with Hadamard transforms, stochastic rounding, and FP32 optimizer" width="800" />
 
 
 
